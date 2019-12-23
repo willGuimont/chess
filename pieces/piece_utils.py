@@ -7,17 +7,21 @@ from utils.maybe import Maybe
 
 
 def __line_indexes(board: Board, from_position: (int, int), step: (int, int), max_step: int) -> [(int, int)]:
-    w, h = board.get_size()
     dx, dy = step
     x, y = from_position
     x, y = x + dx, y + dy
     out = []
     num_steps = 1
-    while 0 <= x < w and 0 <= y < h and num_steps <= max_step:
+    while is_on_board(x, y, board) and num_steps <= max_step:
         out.append((x, y))
         x, y = x + dx, y + dy
         num_steps += 1
     return out
+
+
+def is_on_board(x: int, y: int, board: Board):
+    w, h = board.get_size()
+    return 0 <= x < w and 0 <= y < h
 
 
 def __line_of_sight(board: Board, from_position: (int, int), step: (int, int), max_step: int) -> [(int, int)]:
