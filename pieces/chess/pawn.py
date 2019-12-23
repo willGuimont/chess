@@ -28,6 +28,8 @@ class Pawn(Piece):
     def __can_be_captured_en_passant(self, board: Board, position: (int, int), turn: int):
         x, y = self.get_position()
         px, py = position
+        if not piece_utils.is_on_board(px, py, board):
+            return False
         if y == py and (x + 1 == px or x - 1 == px):
             piece = board.get_piece_at(position)
             if piece.is_just():

@@ -22,7 +22,7 @@ class NoSuchPiece(Exception):
 
 
 class Chess:
-    PIECES = [Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook]
+    PIECES = [lambda x: None, Knight, Bishop, Queen, lambda x: None, Bishop, Knight, lambda x: None]
     BOARD_SIZE = 8
 
     def __init__(self):
@@ -33,13 +33,32 @@ class Chess:
 
     def __initial_configuration(self):
         for i, p in enumerate(self.PIECES):
-            self.__board.set_piece_at((i, 0), p(Piece.Color.WHITE))
+            x = p(Piece.Color.WHITE)
+            if x is not None:
+                self.__board.set_piece_at((i, 0), x)
         for i in range(self.BOARD_SIZE):
             self.__board.set_piece_at((i, 1), Pawn(Piece.Color.WHITE))
+
+        white_king = King(Piece.Color.WHITE)
+        left_white_rook = Rook(Piece.Color.WHITE, white_king)
+        right_white_rook = Rook(Piece.Color.WHITE, white_king)
+        self.__board.set_piece_at((4, 0), white_king)
+        self.__board.set_piece_at((0, 0), left_white_rook)
+        self.__board.set_piece_at((7, 0), right_white_rook)
+
         for i, p in enumerate(self.PIECES):
-            self.__board.set_piece_at((i, 7), p(Piece.Color.BLACK))
+            x = p(Piece.Color.BLACK)
+            if x is not None:
+                self.__board.set_piece_at((i, 7), x)
         for i in range(self.BOARD_SIZE):
             self.__board.set_piece_at((i, 6), Pawn(Piece.Color.BLACK))
+
+        black_king = King(Piece.Color.BLACK)
+        left_black_rook = Rook(Piece.Color.BLACK, black_king)
+        right_black_rook = Rook(Piece.Color.BLACK, black_king)
+        self.__board.set_piece_at((4, 7), black_king)
+        self.__board.set_piece_at((0, 7), left_black_rook)
+        self.__board.set_piece_at((7, 7), right_black_rook)
 
     def __next_turn(self):
         self.__player_turn = Piece.Color.BLACK if self.__player_turn == Piece.Color.WHITE else Piece.Color.WHITE

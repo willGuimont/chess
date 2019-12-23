@@ -12,5 +12,4 @@ class King(Piece):
         return piece_utils.line_of_sight_captures(board, self, self.__directions, 1)
 
     def get_possible_moves(self, board: 'Board', turn: int) -> set:
-        # TODO castling
         return piece_utils.line_of_sight_moves(board, self.get_position(), self.__directions, 1)

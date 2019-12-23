@@ -1,9 +1,7 @@
 from pieces.piece import Piece
+from pieces.placeholder import PlaceHolder
+from utils.flatmap import flatmap
 from utils.maybe import Maybe
-
-
-class PieceAlreadyPresent(Exception):
-    ...
 
 
 class Board:
@@ -11,7 +9,6 @@ class Board:
         self.__width = width
         self.__height = height
         self.__board = [Maybe.nothing()] * (self.__width * self.__height)
-        self.__dead_pieces = []
 
     def get_piece_at(self, position: (int, int)) -> Maybe:
         x, y = position
@@ -34,17 +31,42 @@ class Board:
 
     def capture_piece(self, piece: Piece):
         position = piece.get_position()
-        self.get_piece_at(position).if_present(lambda x: self.__dead_pieces.append(x))
         self.remove_piece_at(position)
 
     def get_size(self):
         return self.__width, self.__height
 
     def move(self, piece: Piece, to_position: (int, int), turn: int):
-        starting_pos = piece.get_position()
-        if self.get_piece_at(to_position).is_just():
-            raise PieceAlreadyPresent(f'could not move from {starting_pos} to {to_position}')
         piece.move(self, to_position, turn)
 
     def capture(self, piece: Piece, captured: Piece, turn: int):
         piece.capture(self, captured, turn)
+
+    def get_pieces(self):
+        pieces = []
+        for p in self.__board:
+            if p.is_just():
+                x = p.get()
+                pieces.append(x)
+        return pieces
+
+    def is_tile_attacked(self, color: Piece.Color, position: (int, int), turn: int):
+        pieces = self.get_pieces()
+        attackers = filter(lambda p: p.get_color() != color, pieces)
+
+        piece = self.get_piece_at(position)
+        is_tile_empty = piece.is_nothing()
+        is_attacked = False
+
+        if is_tile_empty:
+            piece = PlaceHolder(color)
+            self.set_piece_at(position, piece)
+
+        attacked = flatmap(lambda x: x.get_possible_captures(self, turn), attackers)
+        if piece in attacked:
+            is_attacked = True
+
+        if is_tile_empty:
+            self.remove_piece_at(piece.get_position())
+
+        return is_attacked
