@@ -12,12 +12,33 @@ class Pawn(Piece):
         super().__init__(color)
         self.__direction = 1 if color == Piece.Color.WHITE else -1
         self.__captures = [(-1, self.__direction), (1, self.__direction)]
+        self.__double_move_turn = -1
 
-    def get_possible_captures(self, board: Board) -> set:
-        # TODO en passant
-        return piece_utils.line_of_sight_captures(board, self, self.__captures, 1)
+    def get_possible_captures(self, board: Board, turn: int) -> set:
+        captures = piece_utils.line_of_sight_captures(board, self, self.__captures, 1)
+        x, y = self.get_position()
+        left = x - 1, y
+        if self.__can_be_captured_en_passant(board, left, turn):
+            captures.add(board.get_piece_at(left).get())
+        right = x + 1, y
+        if self.__can_be_captured_en_passant(board, right, turn):
+            captures.add(board.get_piece_at(right).get())
+        return captures
 
-    def get_possible_moves(self, board: 'Board') -> set:
+    def __can_be_captured_en_passant(self, board: Board, position: (int, int), turn: int):
+        x, y = self.get_position()
+        px, py = position
+        if y == py and (x + 1 == px or x - 1 == px):
+            piece = board.get_piece_at(position)
+            if piece.is_just():
+                piece = piece.get()
+                if piece.get_color() != self.get_color():
+                    if isinstance(piece, Pawn):
+                        if piece.__double_move_turn + 1 == turn:
+                            return True
+        return False
+
+    def get_possible_moves(self, board: 'Board', turn: int) -> set:
         x, y = self.get_position()
         p = (x, y + self.__direction)
         moves = set()
@@ -29,12 +50,23 @@ class Pawn(Piece):
                     moves.add(pp)
         return moves
 
-    def move(self, board: 'Board', to_position: (int, int)):
-        super().move(board, to_position)
+    def move(self, board: 'Board', to_position: (int, int), turn: int):
+        _, y = self.get_position()
+        super().move(board, to_position, turn)
         self.__check_promotion(board)
+        _, ny = self.get_position()
 
-    def capture(self, board: 'Board', captured):
-        super().capture(board, captured)
+        if abs(ny - y) == 2:
+            self.__double_move_turn = turn
+
+    def capture(self, board: 'Board', captured, turn: int):
+        captured_position = captured.get_position()
+        if self.__can_be_captured_en_passant(board, captured_position, turn):
+            board.remove_piece_at(captured_position)
+            x, y = captured_position
+            self.move(board, (x, y + self.__direction), turn)
+        else:
+            super().capture(board, captured, turn)
         self.__check_promotion(board)
 
     def __check_promotion(self, board: 'Board'):

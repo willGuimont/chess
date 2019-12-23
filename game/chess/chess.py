@@ -28,6 +28,7 @@ class Chess:
     def __init__(self):
         self.__board = Board(self.BOARD_SIZE, self.BOARD_SIZE)
         self.__player_turn = Piece.Color.WHITE
+        self.__turn = 1
         self.__initial_configuration()
 
     def __initial_configuration(self):
@@ -42,12 +43,13 @@ class Chess:
 
     def __next_turn(self):
         self.__player_turn = Piece.Color.BLACK if self.__player_turn == Piece.Color.WHITE else Piece.Color.WHITE
+        self.__turn += 1
 
     def get_possible_captures_for(self, piece: Piece) -> set:
-        return set(map(lambda x: x.get_position(), piece.get_possible_captures(self.__board)))
+        return set(map(lambda x: x.get_position(), piece.get_possible_captures(self.__board, self.__turn)))
 
     def get_possible_moves_for(self, piece: Piece) -> set:
-        return piece.get_possible_moves(self.__board)
+        return piece.get_possible_moves(self.__board, self.__turn)
 
     def get_maybe_piece_at(self, position: (int, int)) -> Maybe:
         return self.__board.get_piece_at(position)
@@ -62,17 +64,18 @@ class Chess:
         if piece.get_color() != self.__player_turn:
             raise BadPlayerException('Bad player')
         captured = self.__get_piece_at(captured_position)
-        if captured not in piece.get_possible_captures(self.__board) or captured.get_color() == piece.get_color():
+        if captured not in piece.get_possible_captures(self.__board,
+                                                       self.__turn) or captured.get_color() == piece.get_color():
             raise InvalidMove('Cannot capture that')
-        self.__board.capture(piece, captured)
+        self.__board.capture(piece, captured, self.__turn)
         self.__next_turn()
 
     def move(self, piece: Piece, to_pos: (int, int)):
         if piece.get_color() != self.__player_turn:
             raise BadPlayerException('Bad player')
-        if to_pos not in piece.get_possible_moves(self.__board):
+        if to_pos not in piece.get_possible_moves(self.__board, self.__turn):
             raise InvalidMove('Cannot move there')
-        self.__board.move(piece, to_pos)
+        self.__board.move(piece, to_pos, self.__turn)
         self.__next_turn()
 
     def get_player_color(self) -> Piece.Color:

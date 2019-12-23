@@ -40,11 +40,11 @@ class Board:
     def get_size(self):
         return self.__width, self.__height
 
-    def move(self, piece: Piece, to_position: (int, int)):
+    def move(self, piece: Piece, to_position: (int, int), turn: int):
         starting_pos = piece.get_position()
         if self.get_piece_at(to_position).is_just():
             raise PieceAlreadyPresent(f'could not move from {starting_pos} to {to_position}')
-        piece.move(self, to_position)
+        piece.move(self, to_position, turn)
 
-    def capture(self, piece: Piece, captured: Piece):
-        piece.capture(self, captured)
+    def capture(self, piece: Piece, captured: Piece, turn: int):
+        piece.capture(self, captured, turn)
