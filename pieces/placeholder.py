@@ -7,7 +7,7 @@ class PlaceHolder(Piece):
         super().__init__(color)
 
     def get_possible_captures(self, board: 'Board', turn: int) -> set:
-        return None
+        return set()
 
     def get_possible_moves(self, board: 'Board', turn: int) -> set:
-        return None
+        return set()

@@ -15,11 +15,8 @@ class Rook(Piece):
 
     def get_possible_moves(self, board: 'Board', turn: int) -> set:
         moves = piece_utils.line_of_sight_moves(board, self.get_position(), self.__directions)
-        print(moves)
         moves = moves.union(self.__right_castling(board, turn))
-        print(moves)
         moves = moves.union(self.__left_castling(board, turn))
-        print(moves)
         return moves
 
     def __right_castling(self, board: 'Board', turn: int):

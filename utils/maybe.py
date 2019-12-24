@@ -1,4 +1,6 @@
 class Maybe:
+    class IsEmptyException(Exception):
+        ...
 
     def __init__(self, value):
         self.__is_just = value is not None
@@ -27,6 +29,8 @@ class Maybe:
             return self.nothing()
 
     def get(self):
+        if self.is_nothing():
+            raise self.IsEmptyException()
         return self.__value
 
     def if_present(self, f):

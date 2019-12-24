@@ -4,6 +4,7 @@ import pyglet
 
 from game.chess.chess import Chess
 from interfaces.chess.gui.ui_board import UIBoard
+from pieces.piece import Piece
 from utils.maybe import Maybe
 
 
@@ -17,52 +18,64 @@ class Game(pyglet.window.Window):
     PIECE_SIZE = 40
 
     def __init__(self):
-        super().__init__()
-        self.chess = Chess()
-        self.ui = UIBoard((self.chess.BOARD_SIZE, self.chess.BOARD_SIZE), self.WHITE_PIECE_COLOR,
-                          self.BLACK_PIECE_COLOR, self.WHITE_TILE_COLOR,
-                          self.BLACK_TILE_COLOR, self.TILE_SIZE, self.PIECE_SIZE, self.width, self.height)
+        super().__init__(width=640, height=600)
+        self.__chess = Chess()
+        self.__ui = UIBoard((self.__chess.BOARD_SIZE, self.__chess.BOARD_SIZE), self.WHITE_PIECE_COLOR,
+                            self.BLACK_PIECE_COLOR, self.WHITE_TILE_COLOR,
+                            self.BLACK_TILE_COLOR, self.TILE_SIZE, self.PIECE_SIZE, self.width, self.height)
 
-        self.selected_piece = Maybe.nothing()
+        self.__selected_piece = Maybe.nothing()
+        self.__winner = None
 
     def on_draw(self):
         self.clear()
-        self.ui.draw_board(self.chess)
-        if self.selected_piece.is_just():
+        self.__ui.draw_board(self.__chess)
+        if self.__selected_piece.is_just():
             try:
-                p = self.selected_piece.get()
-                possible_captures = self.chess.get_possible_captures_for(p)
-                possible_moves = self.chess.get_possible_moves_for(p)
-                self.ui.draw_captures(p, possible_captures)
-                self.ui.draw_moves(p, possible_moves)
-                self.ui.draw_selected_piece(p)
+                p = self.__selected_piece.get()
+                possible_captures = self.__chess.get_possible_captures_for(p)
+                possible_moves = self.__chess.get_possible_moves_for(p)
+                self.__ui.draw_captures(p, possible_captures)
+                self.__ui.draw_moves(p, possible_moves)
+                self.__ui.draw_selected_piece(p)
             except Exception as e:
                 print(e)
                 print(traceback.print_exc())
+        if self.__winner is not None:
+            winner = 'White' if self.__winner == Piece.Color.WHITE else 'Black'
+            label = pyglet.text.Label(f'Winner: {winner}',
+                                      font_size=32,
+                                      color=(255, 255, 255, 255),
+                                      x=self.width / 2, y=50,
+                                      anchor_x='center', anchor_y='center')
+            label.draw()
 
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
-        i, j = self.ui.get_cell_index_from_mouse_position(x, y)
-        if 0 <= i < self.chess.BOARD_SIZE and 0 <= j < self.chess.BOARD_SIZE:
-            if self.selected_piece.is_nothing():
-                maybe_piece = self.chess.get_maybe_piece_at((i, j))
+        if self.__winner is not None:
+            return
+        i, j = self.__ui.get_cell_index_from_mouse_position(x, y)
+        if 0 <= i < self.__chess.BOARD_SIZE and 0 <= j < self.__chess.BOARD_SIZE:
+            if self.__selected_piece.is_nothing():
+                maybe_piece = self.__chess.get_maybe_piece_at((i, j))
                 if maybe_piece.is_just():
                     p = maybe_piece.get()
-                    if p.get_color() == self.chess.get_player_color():
-                        self.selected_piece = maybe_piece
+                    if p.get_color() == self.__chess.get_player_color():
+                        self.__selected_piece = maybe_piece
             else:
                 pos = (i, j)
-                if pos == self.selected_piece.get().get_position():
-                    self.selected_piece = Maybe.nothing()
+                if pos == self.__selected_piece.get().get_position():
+                    self.__selected_piece = Maybe.nothing()
                 else:
-                    p = self.selected_piece.get()
-                    possible_captures = self.chess.get_possible_captures_for(p)
-                    possible_moves = self.chess.get_possible_moves_for(p)
+                    p = self.__selected_piece.get()
+                    possible_captures = self.__chess.get_possible_captures_for(p)
+                    possible_moves = self.__chess.get_possible_moves_for(p)
                     if pos in possible_captures:
-                        self.chess.capture(p, pos)
-                        self.selected_piece = Maybe.nothing()
+                        self.__chess.capture(p, pos)
+                        self.__selected_piece = Maybe.nothing()
                     elif pos in possible_moves:
-                        self.chess.move(p, pos)
-                        self.selected_piece = Maybe.nothing()
+                        self.__chess.move(p, pos)
+                        self.__selected_piece = Maybe.nothing()
+        self.__winner = self.__chess.get_winner()
 
 
 def run():

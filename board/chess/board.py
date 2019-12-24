@@ -52,7 +52,7 @@ class Board:
 
     def is_tile_attacked(self, color: Piece.Color, position: (int, int), turn: int):
         pieces = self.get_pieces()
-        attackers = filter(lambda p: p.get_color() != color, pieces)
+        attackers = list(filter(lambda p: p.get_color() != color, pieces))
 
         piece = self.get_piece_at(position)
         is_tile_empty = piece.is_nothing()
@@ -61,8 +61,10 @@ class Board:
         if is_tile_empty:
             piece = PlaceHolder(color)
             self.set_piece_at(position, piece)
+        else:
+            piece = piece.get()
 
-        attacked = flatmap(lambda x: x.get_possible_captures(self, turn), attackers)
+        attacked = list(flatmap(lambda x: x.get_possible_captures(self, turn), attackers))
         if piece in attacked:
             is_attacked = True
 
