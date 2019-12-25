@@ -1,4 +1,5 @@
 import copy
+from typing import Callable
 
 from board.chess.board import Board
 from pieces import piece_utils
@@ -32,3 +33,21 @@ class King(Piece):
 
         board.set_piece_at(position, self)
         return set(moves)
+
+    def can_capture_cause_check(self, board: Board, piece: Piece, c: Piece, turn: int):
+        return self.__can_save_if(board, piece, turn, lambda b, s: b.capture(s, c, turn))
+
+    def can_move_cause_check(self, board: Board, piece: Piece, m: (int, int), turn: int):
+        return self.__can_save_if(board, piece, turn, lambda b, s: b.move(s, m, turn))
+
+    def __can_save_if(self, board: Board, piece: Piece, turn: int, action: Callable[[Board, Piece], None]):
+        b = copy.deepcopy(board)
+        s = copy.deepcopy(piece)
+        action(b, s)
+        return b.is_tile_attacked(s.get_color(), self.get_position(), turn)
+
+    def is_check(self, board: Board, turn: int):
+        return board.is_tile_attacked(self.get_color(), self.get_position(), turn)
+
+    def can_move(self, board: Board, turn: int):
+        return len(self.get_possible_moves(board, turn)) > 0

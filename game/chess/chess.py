@@ -1,10 +1,10 @@
 import copy
+from typing import Callable
 
 from board.chess.board import Board
 from pieces.chess.bishop import Bishop
 from pieces.chess.king import King
 from pieces.chess.knight import Knight
-from pieces.chess.pawn import Pawn
 from pieces.chess.queen import Queen
 from pieces.chess.rook import Rook
 from pieces.piece import Piece
@@ -31,29 +31,45 @@ class Chess:
         self.__board = Board(self.BOARD_SIZE, self.BOARD_SIZE)
         self.__player_turn = Piece.Color.WHITE
         self.__turn = 1
-        self.__initial_configuration()
+        # self.__initial_configuration()
+        self.__test_config()
 
-    def __initial_configuration(self):
-        for i, p in enumerate(self.PIECES):
-            x = p(Piece.Color.WHITE)
-            if x is not None:
-                self.__board.set_piece_at((i, 0), x)
-        for i in range(self.BOARD_SIZE):
-            self.__board.set_piece_at((i, 1), Pawn(Piece.Color.WHITE))
+    # def __initial_configuration(self):
+    #     for i, p in enumerate(self.PIECES):
+    #         x = p(Piece.Color.WHITE)
+    #         if x is not None:
+    #             self.__board.set_piece_at((i, 0), x)
+    #     for i in range(self.BOARD_SIZE):
+    #         self.__board.set_piece_at((i, 1), Pawn(Piece.Color.WHITE))
+    #
+    #     self.__white_king = King(Piece.Color.WHITE)
+    #     left_white_rook = Rook(Piece.Color.WHITE, self.__white_king)
+    #     right_white_rook = Rook(Piece.Color.WHITE, self.__white_king)
+    #     self.__board.set_piece_at((4, 0), self.__white_king)
+    #     self.__board.set_piece_at((0, 0), left_white_rook)
+    #     self.__board.set_piece_at((7, 0), right_white_rook)
+    #
+    #     for i, p in enumerate(self.PIECES):
+    #         x = p(Piece.Color.BLACK)
+    #         if x is not None:
+    #             self.__board.set_piece_at((i, 7), x)
+    #     for i in range(self.BOARD_SIZE):
+    #         self.__board.set_piece_at((i, 6), Pawn(Piece.Color.BLACK))
+    #
+    #     self.__black_king = King(Piece.Color.BLACK)
+    #     left_black_rook = Rook(Piece.Color.BLACK, self.__black_king)
+    #     right_black_rook = Rook(Piece.Color.BLACK, self.__black_king)
+    #     self.__board.set_piece_at((4, 7), self.__black_king)
+    #     self.__board.set_piece_at((0, 7), left_black_rook)
+    #     self.__board.set_piece_at((7, 7), right_black_rook)
 
+    def __test_config(self):
         self.__white_king = King(Piece.Color.WHITE)
         left_white_rook = Rook(Piece.Color.WHITE, self.__white_king)
         right_white_rook = Rook(Piece.Color.WHITE, self.__white_king)
         self.__board.set_piece_at((4, 0), self.__white_king)
         self.__board.set_piece_at((0, 0), left_white_rook)
         self.__board.set_piece_at((7, 0), right_white_rook)
-
-        for i, p in enumerate(self.PIECES):
-            x = p(Piece.Color.BLACK)
-            if x is not None:
-                self.__board.set_piece_at((i, 7), x)
-        for i in range(self.BOARD_SIZE):
-            self.__board.set_piece_at((i, 6), Pawn(Piece.Color.BLACK))
 
         self.__black_king = King(Piece.Color.BLACK)
         left_black_rook = Rook(Piece.Color.BLACK, self.__black_king)
@@ -72,37 +88,26 @@ class Chess:
 
         captures = piece.get_possible_captures(self.__board, self.__turn)
 
-        if self.__is_check(self.__board, king):
+        if king.is_check(self.__board, self.__turn):
             captures = list(filter(lambda c: self.__can_capture_save_king(piece, king, c), captures))
 
-        captures = set(filter(lambda c: not self.__can_capture_cause_check(king, piece, c), captures))
+        captures = set(
+            filter(lambda c: not king.can_capture_cause_check(self.__board, piece, c, self.__turn), captures))
 
         return set(map(lambda x: x.get_position(), captures))
-
-    def __can_capture_cause_check(self, king, piece, c):
-        b = copy.deepcopy(self.__board)
-        s = copy.deepcopy(piece)
-        position = c.get_position()
-        b.capture(s, b.get_piece_at(position).get(), self.__turn)
-        return b.is_tile_attacked(s.get_color(), king.get_position(), self.__turn)
 
     def get_possible_moves_for(self, piece: Piece) -> set:
         color = piece.get_color()
         king = self.__white_king if color == Piece.Color.WHITE else self.__black_king
         moves = piece.get_possible_moves(self.__board, self.__turn)
 
-        if self.__is_check(self.__board, king) and piece != king:
+        if king.is_check(self.__board, self.__turn) and piece != king:
             moves = set(filter(lambda m: self.__can_move_save_king(piece, king, m), moves))
 
-        moves = set(filter(lambda m: not self.__can_move_cause_check(king, piece, m), moves))
+        if piece != king:
+            moves = set(filter(lambda m: not king.can_move_cause_check(self.__board, piece, m, self.__turn), moves))
 
         return moves
-
-    def __can_move_cause_check(self, king, piece, m):
-        b = copy.deepcopy(self.__board)
-        s = copy.deepcopy(piece)
-        b.move(s, m, self.__turn)
-        return b.is_tile_attacked(s.get_color(), king.get_position(), self.__turn)
 
     def get_maybe_piece_at(self, position: (int, int)) -> Maybe:
         return self.__board.get_piece_at(position)
@@ -134,13 +139,10 @@ class Chess:
     def get_player_color(self) -> Piece.Color:
         return self.__player_turn
 
-    def __is_check(self, board, king):
-        return board.is_tile_attacked(king.get_color(), king.get_position(), self.__turn)
-
     def __is_check_mate(self, king):
         can_save_king = self.__can_save_king(king)
-        can_king_move = len(king.get_possible_moves(self.__board, self.__turn)) > 0
-        is_king_checked = self.__is_check(self.__board, king)
+        can_king_move = king.can_move(self.__board, self.__turn)
+        is_king_checked = king.is_check(self.__board, self.__turn)
         return is_king_checked and not can_king_move and not can_save_king
 
     def __can_save_king(self, king):
@@ -159,22 +161,18 @@ class Chess:
         return False
 
     def __can_move_save_king(self, piece, king, m):
-        if piece == king:
-            return False
-        board = copy.deepcopy(self.__board)
-        p = copy.deepcopy(piece)
-        board.move(p, m, self.__turn)
-        if not self.__is_check(board, king):
-            return True
-        return False
+        return self.__can_action_save_king(piece, king, lambda b, p: b.move(p, m, self.__turn))
 
     def __can_capture_save_king(self, piece, king, c):
+        return self.__can_action_save_king(piece, king, lambda b, p: b.capture(p, c, self.__turn))
+
+    def __can_action_save_king(self, piece: Piece, king: King, action: Callable[[Board, Piece], None]):
         if piece == king:
             return False
         board = copy.deepcopy(self.__board)
         p = copy.deepcopy(piece)
-        board.capture(p, c, self.__turn)
-        if not self.__is_check(board, king):
+        action(board, p)
+        if not king.is_check(board, self.__turn):
             return True
         return False
 
