@@ -5,6 +5,7 @@ from board.chess.board import Board
 from pieces.chess.bishop import Bishop
 from pieces.chess.king import King
 from pieces.chess.knight import Knight
+from pieces.chess.pawn import Pawn
 from pieces.chess.queen import Queen
 from pieces.chess.rook import Rook
 from pieces.piece import Piece
@@ -31,45 +32,29 @@ class Chess:
         self.__board = Board(self.BOARD_SIZE, self.BOARD_SIZE)
         self.__player_turn = Piece.Color.WHITE
         self.__turn = 1
-        # self.__initial_configuration()
-        self.__test_config()
+        self.__initial_configuration()
 
-    # def __initial_configuration(self):
-    #     for i, p in enumerate(self.PIECES):
-    #         x = p(Piece.Color.WHITE)
-    #         if x is not None:
-    #             self.__board.set_piece_at((i, 0), x)
-    #     for i in range(self.BOARD_SIZE):
-    #         self.__board.set_piece_at((i, 1), Pawn(Piece.Color.WHITE))
-    #
-    #     self.__white_king = King(Piece.Color.WHITE)
-    #     left_white_rook = Rook(Piece.Color.WHITE, self.__white_king)
-    #     right_white_rook = Rook(Piece.Color.WHITE, self.__white_king)
-    #     self.__board.set_piece_at((4, 0), self.__white_king)
-    #     self.__board.set_piece_at((0, 0), left_white_rook)
-    #     self.__board.set_piece_at((7, 0), right_white_rook)
-    #
-    #     for i, p in enumerate(self.PIECES):
-    #         x = p(Piece.Color.BLACK)
-    #         if x is not None:
-    #             self.__board.set_piece_at((i, 7), x)
-    #     for i in range(self.BOARD_SIZE):
-    #         self.__board.set_piece_at((i, 6), Pawn(Piece.Color.BLACK))
-    #
-    #     self.__black_king = King(Piece.Color.BLACK)
-    #     left_black_rook = Rook(Piece.Color.BLACK, self.__black_king)
-    #     right_black_rook = Rook(Piece.Color.BLACK, self.__black_king)
-    #     self.__board.set_piece_at((4, 7), self.__black_king)
-    #     self.__board.set_piece_at((0, 7), left_black_rook)
-    #     self.__board.set_piece_at((7, 7), right_black_rook)
+    def __initial_configuration(self):
+        for i, p in enumerate(self.PIECES):
+            x = p(Piece.Color.WHITE)
+            if x is not None:
+                self.__board.set_piece_at((i, 0), x)
+        for i in range(self.BOARD_SIZE):
+            self.__board.set_piece_at((i, 1), Pawn(Piece.Color.WHITE))
 
-    def __test_config(self):
         self.__white_king = King(Piece.Color.WHITE)
         left_white_rook = Rook(Piece.Color.WHITE, self.__white_king)
         right_white_rook = Rook(Piece.Color.WHITE, self.__white_king)
         self.__board.set_piece_at((4, 0), self.__white_king)
         self.__board.set_piece_at((0, 0), left_white_rook)
         self.__board.set_piece_at((7, 0), right_white_rook)
+
+        for i, p in enumerate(self.PIECES):
+            x = p(Piece.Color.BLACK)
+            if x is not None:
+                self.__board.set_piece_at((i, 7), x)
+        for i in range(self.BOARD_SIZE):
+            self.__board.set_piece_at((i, 6), Pawn(Piece.Color.BLACK))
 
         self.__black_king = King(Piece.Color.BLACK)
         left_black_rook = Rook(Piece.Color.BLACK, self.__black_king)
