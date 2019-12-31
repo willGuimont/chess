@@ -18,7 +18,7 @@ class Game(pyglet.window.Window):
     PIECE_SIZE = 40
 
     def __init__(self):
-        super().__init__(width=640, height=600)
+        super().__init__(width=640, height=600, caption='Chess')
         self.__chess = Chess()
         self.__ui = UIBoard((self.__chess.BOARD_SIZE, self.__chess.BOARD_SIZE), self.WHITE_PIECE_COLOR,
                             self.BLACK_PIECE_COLOR, self.WHITE_TILE_COLOR,
