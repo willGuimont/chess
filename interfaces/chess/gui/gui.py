@@ -9,8 +9,8 @@ from utils.maybe import Maybe
 
 
 class Game(pyglet.window.Window):
-    WHITE_PIECE_COLOR = (1, 1, 1, 1)
-    BLACK_PIECE_COLOR = (0, 0, 0, 1)
+    WHITE_PIECE_COLOR = (255, 255, 255, 255)
+    BLACK_PIECE_COLOR = (0, 0, 0, 255)
     WHITE_TILE_COLOR = (0, 1, 0, 1)
     BLACK_TILE_COLOR = (1, 0, 0, 1)
 
