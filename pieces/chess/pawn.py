@@ -1,6 +1,7 @@
 from board.chess.board import Board
 from pieces import piece_utils
 from pieces.chess.bishop import Bishop
+from pieces.chess.king import King
 from pieces.chess.knight import Knight
 from pieces.chess.queen import Queen
 from pieces.chess.rook import Rook
@@ -74,17 +75,20 @@ class Pawn(Piece):
     def __check_promotion(self, board: 'Board'):
         x, y = self.get_position()
         _, h = board.get_size()
-        if y == (h - 1 if self.__direction > 0 else 0):
-            promotion = ''
-            while promotion not in ['q', 'k', 'r', 'b']:
-                print('Pawn promotion: (Q)ueen, (K)night, (R)ook, (B)bishop')
-                promotion = input('Promote to: ').lower()
-            color = self.get_color()
-            if promotion == 'q':
-                board.set_piece_at((x, y), Queen(color))
-            elif promotion == 'k':
-                board.set_piece_at((x, y), Knight(color))
-            elif promotion == 'r':
-                board.set_piece_at((x, y), Rook(color))
-            elif promotion == 'b':
-                board.set_piece_at((x, y), Bishop(color))
+        if not board.get_is_simulation():
+            if y == (h - 1 if self.__direction > 0 else 0):
+                promotion = ''
+                while promotion not in ['q', 'k', 'r', 'b']:
+                    print('Pawn promotion: (Q)ueen, (K)night, (R)ook, (B)bishop')
+                    promotion = input('Promote to: ').lower()
+                color = self.get_color()
+                if promotion == 'q':
+                    board.set_piece_at((x, y), Queen(color))
+                elif promotion == 'k':
+                    board.set_piece_at((x, y), Knight(color))
+                elif promotion == 'r':
+                    same_color = filter(lambda p: p.get_color() == self.get_color(), board.get_pieces())
+                    king = next(filter(lambda p: isinstance(p, King), same_color))
+                    board.set_piece_at((x, y), Rook(color, king))
+                elif promotion == 'b':
+                    board.set_piece_at((x, y), Bishop(color))

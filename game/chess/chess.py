@@ -155,6 +155,7 @@ class Chess:
         if piece == king:
             return False
         board = copy.deepcopy(self.__board)
+        board.set_is_simulation(True)
         p = copy.deepcopy(piece)
         action(board, p)
         if not king.is_check(board, self.__turn):

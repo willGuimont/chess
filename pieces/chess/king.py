@@ -18,6 +18,7 @@ class King(Piece):
 
     def __can_move_there(self, board: Board, captured: Piece, turn: int):
         b = copy.deepcopy(board)
+        b.set_is_simulation(True)
         s = copy.deepcopy(self)
         position = captured.get_position()
         b.capture(s, b.get_piece_at(position).get(), turn)
@@ -27,11 +28,13 @@ class King(Piece):
         position = self.get_position()
         moves = piece_utils.line_of_sight_moves(board, position, self.__directions, 1)
 
+        board.set_is_simulation(True)
         board.remove_piece_at(position)
         color = self.get_color()
         moves = set(filter(lambda x: not board.is_tile_attacked(color, x, turn), moves))
-
         board.set_piece_at(position, self)
+        board.set_is_simulation(False)
+
         return set(moves)
 
     def can_capture_cause_check(self, board: Board, piece: Piece, c: Piece, turn: int):
@@ -42,6 +45,7 @@ class King(Piece):
 
     def __can_save_if(self, board: Board, piece: Piece, turn: int, action: Callable[[Board, Piece], None]):
         b = copy.deepcopy(board)
+        b.set_is_simulation(True)
         s = copy.deepcopy(piece)
         action(b, s)
         return b.is_tile_attacked(s.get_color(), self.get_position(), turn)

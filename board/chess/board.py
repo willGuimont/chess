@@ -9,6 +9,13 @@ class Board:
         self.__width = width
         self.__height = height
         self.__board = [Maybe.nothing()] * (self.__width * self.__height)
+        self.__is_simulation = False
+
+    def set_is_simulation(self, value):
+        self.__is_simulation = value
+
+    def get_is_simulation(self):
+        return self.__is_simulation
 
     def get_piece_at(self, position: (int, int)) -> Maybe:
         x, y = position
