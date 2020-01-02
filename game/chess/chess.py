@@ -73,7 +73,7 @@ class Chess:
 
         captures = piece.get_possible_captures(self.__board, self.__turn)
 
-        if king.is_check(self.__board, self.__turn):
+        if piece != king and king.is_check(self.__board, self.__turn):
             captures = list(filter(lambda c: self.__can_capture_save_king(piece, king, c), captures))
 
         captures = set(

@@ -13,16 +13,17 @@ class King(Piece):
 
     def get_possible_captures(self, board: Board, turn: int) -> set:
         captures = piece_utils.line_of_sight_captures(board, self, self.__directions, 1)
-        captures = set(filter(lambda x: self.__can_move_there(board, x, turn), captures))
+        captures = set(filter(lambda x: self.__can_capture_there(board, x, turn), captures))
         return set(captures)
 
-    def __can_move_there(self, board: Board, captured: Piece, turn: int):
+    def __can_capture_there(self, board: Board, captured: Piece, turn: int):
         b = copy.deepcopy(board)
         b.set_is_simulation(True)
         s = copy.deepcopy(self)
+
         position = captured.get_position()
         b.capture(s, b.get_piece_at(position).get(), turn)
-        return not b.is_tile_attacked(s.get_color(), position, turn)
+        return not b.is_tile_attacked(s.get_color(), s.get_position(), turn + 1)
 
     def get_possible_moves(self, board: 'Board', turn: int) -> set:
         position = self.get_position()
@@ -55,3 +56,6 @@ class King(Piece):
 
     def can_move(self, board: Board, turn: int):
         return len(self.get_possible_moves(board, turn)) > 0
+
+    def can_capture(self, board: Board, turn: int):
+        return len(self.get_possible_captures(board, turn)) > 0
