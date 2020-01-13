@@ -15,7 +15,7 @@ class UIBoard:
     def __init__(self, board_size: (int, int), white_piece_color: (int, int, int, int),
                  black_piece_color: (int, int, int, int), white_tile_color: (int, int, int, int),
                  black_tile_color: (int, int, int, int), tile_size: int, piece_size: int,
-                 width: int, height: int):
+                 window_width: int, window_height: int):
         self.__board_size = board_size
         self.__white_piece_color = white_piece_color
         self.__black_piece_color = black_piece_color
@@ -24,12 +24,12 @@ class UIBoard:
         self.__tile_size = tile_size
         self.__half_tile_size = tile_size / 2
         self.__piece_size = piece_size
-        self.__width = width
-        self.__height = height
+        self.__window_width = window_width
+        self.__window_height = window_height
 
-        self.__w, self.__h = self.__board_size
-        self.__transform = self.__width / 2 - self.__w / 2 * self.__tile_size, \
-                           self.__height / 2 - self.__h / 2 * self.__tile_size, \
+        self.__board_size_width, self.__board_size_height = self.__board_size
+        self.__transform = self.__window_width / 2 - self.__board_size_width / 2 * self.__tile_size, \
+                           self.__window_height / 2 - self.__board_size_height / 2 * self.__tile_size, \
                            0
 
     def get_cell_index_from_mouse_position(self, x: int, y: int):
@@ -40,8 +40,8 @@ class UIBoard:
         gl.glPushMatrix()
         gl.glTranslatef(*self.__transform)
 
-        for x in range(self.__w):
-            for y in range(self.__h):
+        for x in range(self.__board_size_width):
+            for y in range(self.__board_size_height):
                 gl.glPushMatrix()
                 gl.glTranslatef(x * self.__tile_size, y * self.__tile_size, 0)
                 self.__draw_tile(x, y)
